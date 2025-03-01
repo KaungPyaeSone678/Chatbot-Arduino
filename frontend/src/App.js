@@ -6,6 +6,8 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import "@fontsource/poppins"; // This loads the default weight of 400
+import { motion } from "framer-motion";
+
 
 
 
@@ -14,6 +16,8 @@ const theme = createTheme({
     fontFamily: "Poppins, Arial, sans-serif"
   }
 });
+
+
 
 const Chatbot = () => {
   const [message, setMessage] = useState('');
@@ -48,79 +52,6 @@ const Chatbot = () => {
   };
 
   return (
-    // {/* {conversation.map((msg, index) => (
-    //           <Typography key={index} align={msg.sender === 'user' ? 'right' : 'left'} sx={{marginY: "1rem"}}>
-    //             <strong>
-    //               {msg.sender === 'user' ? (
-    //                 <PersonIcon sx={{ verticalAlign: 'middle', marginRight: 1 }} />
-    //               ) : (
-    //                 <SmartToyIcon sx={{ verticalAlign: 'middle', marginRight: 1 }} />
-    //               )}
-    //             </strong> {msg.text}
-    //           </Typography>
-    //         ))} */}
-    // <Box 
-    // sx={{ 
-    //   width: '98vw',
-    //   height: '95vh',
-    //   position: 'relative',
-    //   // overflow: "hidden",
-    //   // margin: '1em',
-    //   // padding: '2em',
-    //   // border: '1px solid #ccc',
-    //   // borderRadius: '8px' 
-    // }}>
-      // <Typography variant="h5" gutterBottom
-      // sx={{
-      //   marginTop: "1rem",
-      //   marginLeft: "1rem"
-      // }}
-      // >
-      //   Arduino Chatbot
-      // </Typography>
-      // <Box sx={{ maxHeight: '80vh', overflowY: 'auto', marginBottom: '5rem', marginX: '2rem'}}>
-      //   {conversation.map((msg, index) => (
-      //     <Typography key={index} align={msg.sender === 'user' ? 'right' : 'left'}>
-      //       <strong>
-      //         {msg.sender === 'user' ? (
-      //           <PersonIcon sx={{ verticalAlign: 'middle', marginRight: 1 }} />
-      //         ) : (
-      //           <SmartToyIcon sx={{ verticalAlign: 'middle', marginRight: 1 }} />
-      //         )}
-      //         {/* {msg.sender === 'user' ? 'You' : 'Bot'}: */}
-      //       </strong> {msg.text}
-      //     </Typography>
-      //   ))}
-      // </Box>
-      // <TextField
-      //   value={message}
-      //   onChange={(e) => setMessage(e.target.value)}
-      //   label="Ask me anything about Arduino"
-      //   variant="outlined"
-      //   fullWidth
-      //   margin="normal"
-      //   sx={{ position: "absolute", bottom: 1, right: 0, width: "60rem" }}
-      //   InputProps={{
-      //     endAdornment: (
-      //       <IconButton
-      //         sx={{
-      //           borderRadius: "50%", // To make the button circular
-      //           width: "36px", // Adjust the size of the button
-      //           height: "36px", // Adjust the size of the button
-      //           padding: 0,
-      //           marginRight: 1, // Space from the right edge
-      //         }}
-      //       >
-      //         <SendIcon onClick={handleSendMessage}/>
-      //       </IconButton>
-      //     ),
-      //   }}
-    //   />
-    //   {/* <Button variant="contained" color="primary" fullWidth onClick={handleSendMessage}   >
-    //     Send
-    //   </Button> */}
-    // </Box>
-    // {/* <Grid size={3} sx={{backgroundColor: "black", height: "100vh"}}></Grid> */}
     <ThemeProvider theme={theme}>
     <Grid container >
         
@@ -144,7 +75,7 @@ const Chatbot = () => {
                 maxWidth: "200px", // Automatically adjust width based on content
                 marginTop: "2rem",
                 backgroundColor: "#F5F6F5",
-                boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.1)",
+                boxShadow: 10,
                 zIndex: 10
               }}
             >
@@ -201,7 +132,7 @@ const Chatbot = () => {
                 >
                   <Box
                   sx={{
-                    backgroundColor: "#E0E0E0", // Light gray background
+                    backgroundColor: "#00CECB", // Light gray background
                     padding: "0.8rem 1.2rem", // Padding inside the bubble
                     borderRadius: "1.5rem", // Rounded corners
                     maxWidth: "60%", // Prevents the bubble from being too wide
@@ -213,19 +144,25 @@ const Chatbot = () => {
                   <PersonIcon sx={{ marginX: "1rem",  marginTop: "0.7rem"}} />
                 </Typography>
               ) : (
-                <Typography
-                  key={index}
-                  align="left"
-                  sx={{ marginY: "1rem", display: 'flex', justifyContent: 'flex-start' }}
-                >
-                  <SmartToyIcon sx={{ marginX: "1rem"}} />
-                  {/* <span>{msg.text}</span> */}
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: msg.text, // This allows rendering HTML like <br />
-                    }}
-                  />
-                </Typography>
+                <>
+                {msg.text.split("<br>").map((line, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.3 }} // Delay each line
+                  >
+                  <Typography
+                    key={index}
+                    align="left"
+                    sx={{ marginY: "1rem", display: 'flex', justifyContent: 'flex-start' }}
+                  >
+                    <SmartToyIcon sx={{ marginX: "1rem"}} />
+                    <div dangerouslySetInnerHTML={{ __html: line,}} />
+                  </Typography>
+                  </motion.div>
+                ))}
+              </>
               )}
             </>
             ))
@@ -260,7 +197,7 @@ const Chatbot = () => {
           // margin="normal"
           sx={{
             // position: "fixed",
-            // bottom: 10,
+            // bottom: 5,
             // marginLeft: "3rem",
             // marginRight: "3rem",
             maxWidth: {
