@@ -6,7 +6,9 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import "@fontsource/poppins"; // This loads the default weight of 400
-import { motion } from "framer-motion";
+import { CircularProgress } from '@mui/material';
+
+// import { motion } from "framer-motion";
 
 
 
@@ -22,6 +24,7 @@ const theme = createTheme({
 const Chatbot = () => {
   const [message, setMessage] = useState('');
   const [conversation, setConversation] = useState([]);
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -32,6 +35,7 @@ const Chatbot = () => {
     if (message.trim()) {
       setConversation([...conversation, { sender: 'user', text: message }]);
       setMessage('');
+      setLoading(true);
 
       // Call the Python backend
       const response = await fetch('http://127.0.0.1:5000/chat', {
@@ -46,8 +50,15 @@ const Chatbot = () => {
 
       const botResponse = data.answer.replace(/\n/g, '<br />');
       setConversation([...conversation, { sender: 'user', text: message }, { sender: 'bot', text: botResponse }]);
-
+      setLoading(false);
       // setConversation([...conversation, { sender: 'user', text: message }, { sender: 'bot', text: data.answer }]);
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();  // Prevents newline in the TextField
+      handleSendMessage();
     }
   };
 
@@ -107,7 +118,7 @@ const Chatbot = () => {
             maxHeight: '75vh', 
             overflowY: 'auto', 
             marginBottom: '5rem', 
-            marginX: '4rem', 
+            marginX: {xs: '1rem', md: "4rem", lg: "4rem"}, 
             marginTop: "2rem",
             '&::-webkit-scrollbar': {
               display: 'none',  // Hide scrollbar in Chrome, Safari
@@ -144,25 +155,19 @@ const Chatbot = () => {
                   <PersonIcon sx={{ marginX: "1rem",  marginTop: "0.7rem"}} />
                 </Typography>
               ) : (
-                <>
-                {msg.text.split("<br>").map((line, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.3 }} // Delay each line
-                  >
-                  <Typography
-                    key={index}
-                    align="left"
-                    sx={{ marginY: "1rem", display: 'flex', justifyContent: 'flex-start' }}
-                  >
-                    <SmartToyIcon sx={{ marginX: "1rem"}} />
-                    <div dangerouslySetInnerHTML={{ __html: line,}} />
-                  </Typography>
-                  </motion.div>
-                ))}
-              </>
+                <Typography
+                  key={index}
+                  align="left"
+                  sx={{ marginY: "1rem", display: 'flex', justifyContent: 'flex-start' }}
+                >
+                  <SmartToyIcon sx={{ marginX: "1rem"}} />
+                  {/* <span>{msg.text}</span> */}
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: msg.text, // This allows rendering HTML like <br />
+                    }}
+                  />
+                </Typography>
               )}
             </>
             ))
@@ -191,6 +196,7 @@ const Chatbot = () => {
           <TextField
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
           label="Ask me anything about Arduino"
           variant="outlined"
           fullWidth
@@ -247,7 +253,8 @@ const Chatbot = () => {
                 marginRight: 1, // Space from the right 
               }}
               >
-                <SendIcon sx={{color: "#00CECB"}} onClick={handleSendMessage}/>
+                {loading ? <CircularProgress size={24} sx={{ color: "#00CECB" }} /> : <SendIcon sx={{ color: "#00CECB" }} onClick={handleSendMessage} />}
+                {/* <SendIcon sx={{color: "#00CECB"}} onClick={handleSendMessage}/> */}
               </IconButton>
             ),
           }}
