@@ -6,7 +6,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import "@fontsource/poppins";
-import { CircularProgress } from '@mui/material';
+import PendingSharpIcon from '@mui/icons-material/PendingSharp';
 
 const theme = createTheme({
   typography: {
@@ -114,7 +114,7 @@ const Chatbot = () => {
               maxHeight: '75vh', 
               overflowY: 'auto', 
               marginBottom: '5rem', 
-              marginX: {xs: '1rem', md: "4rem", lg: "4rem"}, 
+              marginX: {xs: '0.7rem', md: "4rem", lg: "4rem"}, 
               marginTop: "2rem",
               '&::-webkit-scrollbar': {
                 display: 'none',  // Hide scrollbar in Chrome, Safari
@@ -150,7 +150,15 @@ const Chatbot = () => {
                   >
                     {msg.text}
                   </Box>
-                  <PersonIcon sx={{ marginX: "1rem",  marginTop: "0.7rem"}} />
+                  <PersonIcon 
+                    sx={{ 
+                      marginX: "1rem", 
+                      marginTop: "0.5rem",
+                      borderRadius: "50%",
+                      border: "4px solid #00CECB",
+                      padding: "3px",
+                    }} 
+                  />
                 </Typography>
 
               ) : (
@@ -160,7 +168,16 @@ const Chatbot = () => {
                   align="left"
                   sx={{ marginY: "1rem", display: 'flex', justifyContent: 'flex-start' }}
                 >
-                  <SmartToyIcon sx={{ marginX: "1rem"}} />
+                  <SmartToyIcon 
+                    sx={{ 
+                      marginX: "1rem",
+                      color: "#00CECB",
+                      borderRadius: "50%",
+                      border: "2px solid #00CECB",
+                      padding: "5px",
+                      backgroundColor: "black"
+                    }} 
+                  />
                   <div
                     dangerouslySetInnerHTML={{
                       __html: msg.text, // This allows rendering HTML like <br />
@@ -241,7 +258,7 @@ const Chatbot = () => {
                     marginRight: 1, 
                   }}
                 >
-                  {loading ? <CircularProgress size={24} sx={{ color: "#00CECB" }} /> : <SendIcon sx={{ color: "#00CECB" }} onClick={handleSendMessage} />}
+                  {loading ? <PendingSharpIcon  sx={{ color: "#00CECB", fontSize: 37 }} /> : <SendIcon sx={{ color: "#00CECB" }} onClick={handleSendMessage} />}
                 </IconButton>
               ),
             }}
