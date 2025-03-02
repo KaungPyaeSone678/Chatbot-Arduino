@@ -6,7 +6,6 @@ from langchain_community.document_loaders import PDFPlumberLoader
 from langchain_community.vectorstores import Chroma
 from langchain_ollama import OllamaEmbeddings
 import os
-import pickle
 
 app = Flask(__name__)
 
