@@ -1,43 +1,60 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import ollama
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PDFPlumberLoader
 from langchain_community.vectorstores import Chroma
 from langchain_ollama import OllamaEmbeddings
+import os
 
+# app = Flask(__name__)
 
-# 1. Load the data
-loader = PDFPlumberLoader("arduino.pdf")
-docs = loader.load()
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-splits = text_splitter.split_documents(docs)
-print(f"Split {len(docs)} documents into {len(splits)} chunks.")
+# CORS(app)
 
+# Path to store the vector store
+vectorstore_dir = 'vectorstore_db'
 
-# 2. Create Ollama embeddings and vector store
-embeddings = OllamaEmbeddings(model="llama3.2:1b")
-vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
-print("Done embeddings!!")
+# Function to create and load the vector store
+def create_vectorstore(splits):
+    embeddings = OllamaEmbeddings(model="llama3.2:1b")
+    # Create the vectorstore and persist it automatically
+    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory=vectorstore_dir)
+    return vectorstore
 
-# 3. Call Ollama Llama3 model
+# Load or create the vector store
+if os.path.exists(vectorstore_dir):
+    # If the vectorstore exists, it is loaded automatically by Chroma
+    vectorstore = Chroma(persist_directory=vectorstore_dir, embedding_function=OllamaEmbeddings(model="llama3.2:1b"))
+else:
+    # If the vectorstore does not exist, create a new one
+    loader = PDFPlumberLoader("arduino.pdf")
+    docs = loader.load()
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    splits = text_splitter.split_documents(docs)
+    
+    vectorstore = create_vectorstore(splits)
+
+# Setup for RAG
+def combine_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
 def ollama_llm(question, context):
     formatted_prompt = f"Question: {question}\n\nContext: {context}"
-    print(question, context)
     response = ollama.chat(model='llama3.2:1b', messages=[{'role': 'user', 'content': formatted_prompt}])
     return response['message']['content']
 
-# 4. RAG Setup
-retriever = vectorstore.as_retriever()
-print("Start setting up RAG!!")
-def combine_docs(docs):
-    return "\n\n".join(doc.page_content for doc in docs)
 def rag_chain(question):
+    retriever = vectorstore.as_retriever()
     retrieved_docs = retriever.invoke(question)
+    print("..........")
+    print(retrieved_docs)
+    print("..........")
     formatted_context = combine_docs(retrieved_docs)
+    print("-----------")
+    print(question, formatted_context)
+    print("-----------")
     return ollama_llm(question, formatted_context)
 
-# 5. Use the RAG App
-# result = rag_chain("Who wrote arduino projects book?")
-# print(result)
 try:
     while True:
         # Prompt the user for input
@@ -53,14 +70,13 @@ try:
 except KeyboardInterrupt:
     print("\nProgram terminated by user.")
 
+# @app.route('/chat', methods=['POST'])
+# def chat():
+#     data = request.json
+#     question = data.get("question")
+#     answer = rag_chain(question)
+#     print(answer)
+#     return jsonify({"answer": answer})
 
-
-# # Load and split documents
-# loader = PDFPlumberLoader("../arduino.pdf")
-# docs = loader.load()
-# text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-# splits = text_splitter.split_documents(docs)
-
-# # Create Ollama embeddings and vector store
-# embeddings = OllamaEmbeddings(model="llama3.2:1b")
-# vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
+# if __name__ == '__main__':
+#     app.run(debug=True)
